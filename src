@@ -1,0 +1,114 @@
+#define LED_PIN D5
+#define BUZZER_PIN D6
+#define BUTTON_PIN D7
+
+#define BEAM_MIN 15
+#define MOTION_DROP 30
+
+
+bool armed = false;
+bool alarmActive = false;
+
+bool lastButtonState = HIGH;
+
+int lastLight = 0;
+
+
+void setup() {
+  pinMode(LED_PIN, OUTPUT);
+  pinMode(BUZZER_PIN, OUTPUT);
+  pinMode(BUTTON_PIN, INPUT_PULLUP);
+
+  digitalWrite(LED_PIN, LOW);
+  noTone(BUZZER_PIN);
+
+
+  Serial.begin(115200);
+
+  lastLight = analogRead(A0);
+
+  Serial.println("Night Beam Motion Detector Ready");
+  Serial.println("Press button to ARM");
+
+}
+
+void loop() {
+
+  int light = 0;
+
+  for (int i = 0; i < 10; i++) {
+    light += analogRead(A0);
+    delay(5);
+  }
+
+  light = light / 10;
+  
+  bool buttonState = digitalRead(BUTTON_PIN);
+
+
+  // Button pressed
+  if (lastButtonState == HIGH && buttonState == LOW) {
+
+    armed = !armed;
+
+    if (armed) {
+      lastLight = light;
+      Serial.println("SYSTEM ARMED");
+    } 
+    else {
+      Serial.println("SYSTEM DISARMED");
+
+      alarmActive = false;
+      digitalWrite(LED_PIN, LOW);
+      noTone(BUZZER_PIN);
+    }
+
+    delay(200); // debounce
+  }
+
+  lastButtonState = buttonState;
+
+
+  Serial.print("Light Value: ");
+  Serial.println(light);
+
+  // Only check beam when armed
+  if (armed && !alarmActive) {
+
+    // Detect sudden drop in beam
+    if (lastLight - light > MOTION_DROP) {
+      Serial.print("lastLight: ");
+      Serial.println(lastLight);
+
+      Serial.print("light: ");
+      Serial.println(light);
+
+      Serial.println("MOTION DETECTED!");
+
+      digitalWrite(LED_PIN, HIGH);
+      tone(BUZZER_PIN, 1000);
+
+      delay(1000);
+
+
+      digitalWrite(LED_PIN, LOW);
+      noTone(BUZZER_PIN);
+
+    }
+
+    else if (light >= BEAM_MIN) {
+
+      Serial.println("BEAM OK");
+
+      digitalWrite(LED_PIN, LOW);
+      noTone(BUZZER_PIN);
+
+    }
+
+  }
+
+  if (light >= BEAM_MIN) {
+    lastLight = light;
+  }
+  delay(100);
+}
