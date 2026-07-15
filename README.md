@@ -224,3 +224,6 @@ Several enhancements could be implemented to improve the functionality and usabi
   
 These improvements would transform the Night Beam Motion Detection System from a simple beam-break alarm into a fully connected IoT security platform.
 
+
+<img width="1600" height="1200" alt="cover" src="https://github.com/user-attachments/assets/f8027b45-a29d-4200-aca5-cad241ef1763" />
+
